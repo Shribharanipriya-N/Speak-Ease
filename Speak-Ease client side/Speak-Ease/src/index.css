@@ -558,3 +558,44 @@ body{
   justify-content: center;
   align-items: center;
 }
+
+/* update task */
+
+.updatetask-container{
+  background-color: #eddc8a75;
+  height : 73vh;
+  border-radius: 10px;
+}
+
+.updatetask-head{
+  padding-top: 35px;
+  font-size: 33px;
+  display: flex;
+  justify-content: space-around;
+  margin-right: 40px;
+
+}
+
+.updatetaskhead-left{
+  margin-top: 6px;
+  font-size: 24px;
+  display: flex;
+  gap: 9px;
+  margin-left: 120px;
+}
+
+.updatetaskinputs{
+  margin-top: 25px;
+  display: flex;
+  flex-direction: column;
+  gap: 30px;
+}
+
+.updatetaskbtn{
+  display: flex;
+ justify-content: center;
+ gap: 90px;
+ margin-top: 20px;
+ align-items: center;
+
+}

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { FaRegKeyboard } from 'react-icons/fa';
-import { BiSolidBellRing } from 'react-icons/bi';
+import { BiSolidBellRing, BiSolidBellOff } from 'react-icons/bi';
 
 const AddTask = ({ onTaskAdded }) => {
   const [taskName, setTaskName] = useState('');
@@ -9,13 +9,14 @@ const AddTask = ({ onTaskAdded }) => {
   const [taskTime, setTaskTime] = useState('');
   const [listening, setListening] = useState(false);
   const [keyboardClicked, setKeyboardClicked] = useState(false);
+  const [notiStatus, setNotiStatus] = useState('yes');
 
   useEffect(() => {
     startListening();
   }, []);
 
   const startListening = () => {
-    if(keyboardClicked==true){
+    if(keyboardClicked) {
       return;
     }
     if (!('webkitSpeechRecognition' in window)) {
@@ -56,7 +57,6 @@ const AddTask = ({ onTaskAdded }) => {
   };
 
   const startListeningForDate = () => {
-    
     if (!('webkitSpeechRecognition' in window)) {
       alert("Web Speech API is not supported in this browser.");
     } else {
@@ -152,7 +152,7 @@ const AddTask = ({ onTaskAdded }) => {
       date: taskDate,
       time: taskTime,
       status: 'assigned',
-      notistatus: 'yes',
+      notistatus: notiStatus,
       userId: userId,
     };
     axios.post('http://localhost:4000/addTask', taskData)
@@ -177,6 +177,10 @@ const AddTask = ({ onTaskAdded }) => {
   const handleKeyboardIconClick = () => {
     stopListening();
     setKeyboardClicked(true);
+  };
+
+  const toggleNotiStatus = () => {
+    setNotiStatus(prevStatus => prevStatus === 'yes' ? 'no' : 'yes');
   };
 
   return (
@@ -204,12 +208,16 @@ const AddTask = ({ onTaskAdded }) => {
           </div>
           <div className='addtaskbtn'>
             <button type="submit" style={{ fontSize: '28px', background: '#37d6cb6c', border: 'none', height: '60px', width: '210px', borderRadius: '15px' }}>Add Task</button>
-            <BiSolidBellRing size={38} />
+            {notiStatus === 'yes' ? (
+              <BiSolidBellRing size={38} onClick={toggleNotiStatus} />
+            ) : (
+              <BiSolidBellOff size={38} onClick={toggleNotiStatus} />
+            )}
           </div>
         </form>
       </div>
     </div>
-  )
-}
+  );
+};
 
 export default AddTask;

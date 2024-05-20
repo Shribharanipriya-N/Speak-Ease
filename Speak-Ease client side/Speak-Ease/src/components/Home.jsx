@@ -6,7 +6,7 @@ import { BiSolidBellRing, BiSolidBellOff } from 'react-icons/bi';
 import axios from 'axios';
 import NoTask from './NoTask';
 
-const Home = ({ tasks, filter, setTasks }) => {
+const Home = ({ tasks, filter, setTasks ,onEditTask}) => {
   const formatTime = (time) => {
     const [hours, minutes] = time.split(':').map(Number);
     const period = hours >= 12 ? 'pm' : 'am';
@@ -145,7 +145,7 @@ const Home = ({ tasks, filter, setTasks }) => {
                 <BiSolidBellOff size={25} onClick={() => toggleNotification(item._id)} />
               )}
               <div className='icon'>
-                <RiPencilLine size={23} />
+                <RiPencilLine size={23}  onClick={()=>onEditTask(item._id)}/>
                 <MdDelete size={23} onClick={() => deleteTask(item._id)} />
               </div>
             </div>

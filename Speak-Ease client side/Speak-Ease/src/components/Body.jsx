@@ -7,12 +7,15 @@ import AddTask from './AddTask';
 import Home from './Home';
 import '../index.css'
 import axios from 'axios';
+import UpdateTask from './UpdateTask';
 
 
 const Body=()=> {
   const [statusFilter, setStatusFilter] = useState('assigned');
   const [tasks, setTasks] = useState([]);
   const [showAddTask, setShowAddTask] = useState(false);
+  const [showUpdateTask, setShowUpdateTask] = useState(false);
+  const [selectedTaskId, setSelectedTaskId] = useState(null);
 
   useEffect(() => {
     // Fetch tasks for the logged-in user
@@ -59,6 +62,25 @@ const Body=()=> {
     }
     
   };
+  const handleEditTask = (taskId) => {
+    setSelectedTaskId(taskId);
+    setShowUpdateTask(true);
+  };
+  const handleTaskUpdated = async() => {
+    setShowUpdateTask(false);
+    try {
+      const userId = sessionStorage.getItem('userId');
+      const response = await axios.get(`http://localhost:4000/userTasks/${userId}`);
+      setTasks(response.data); // Update tasks with the latest data
+    } catch (error) {
+      console.error('Error fetching updated tasks:', error);
+    }
+    
+  };
+  // Function to clear selected task
+  const clearSelectedTask = () => {
+    setSelectedTaskId(null);
+  };
   return (
     <>
       <NavBar />
@@ -68,10 +90,11 @@ const Body=()=> {
           <Buttons setFilter={setStatusFilter} filter={statusFilter}onButtonClick={() => setShowAddTask(false)}/>
           {showAddTask ? (
             <AddTask onTaskAdded={handleTaskAdded} />
+          ) : selectedTaskId ? (
+            <UpdateTask taskId={selectedTaskId} setTasks={setTasks} clearSelectedTask={clearSelectedTask} onEditTask={handleEditTask} />
           ) : (
-            <Home tasks={tasks} setTasks={setTasks} filter={statusFilter} />
+            <Home tasks={tasks} setTasks={setTasks} filter={statusFilter} onEditTask={handleEditTask} />
           )}
-
         </div>
       </div>
     </>

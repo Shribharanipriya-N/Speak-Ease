@@ -3,9 +3,7 @@ const mongoose=require('mongoose')
 const cors=require('cors')
 const { UserModel, TaskModel } = require('./models/schema');
 
-// const schedule = require('node-schedule');
-// const nodemailer = require('nodemailer');
-// const moment = require('moment');
+
 
 const app = express()
 app.use(express.json())
@@ -37,6 +35,8 @@ app.get('/getuser',async function(req,res){
 })
     }
 })
+
+//login
 app.post('/login',async(req,res)=>{
   const { name, password } = req.body;
   try {
@@ -51,11 +51,9 @@ app.post('/login',async(req,res)=>{
   }
 });
 
-
+//signup
 app.post('/register', (req, res) => {
   const { name, email, password } = req.body;
-  
-  // Check if the email or username already exists
   UserModel.findOne({ $or: [{ name: name }, { email: email }] })
     .then(existingUser => {
       if (existingUser) {
@@ -65,10 +63,8 @@ app.post('/register', (req, res) => {
           res.status(400).json({ message: "Username already exists" }); // 400 Bad Request
         }
       } else {
-        // User does not exist, proceed with registration
         UserModel.create({ name, email, password })
           .then(user => {
-            // Send the user ID back to the frontend
             res.status(201).json({ message: "User created successfully", userId: user._id });
           })
           .catch(err => res.status(500).json({ message: err.message })); // 500 Internal Server Error
@@ -91,7 +87,7 @@ app.post('/addTask', async (req, res) => {
           time,
           status,
           notistatus,
-          user: userId // Assuming you'll send the user ID from the frontend
+          user: userId 
       });
       await task.save();
       res.status(201).json({ message: "Task added successfully" });
@@ -124,13 +120,10 @@ app.delete('/deleteTask/:id', async (req, res) => {
 });
 
 // Display Tasks for Specific User
-// Display Tasks for Specific User sorted by date and time
 app.get('/userTasks/:userId', async (req, res) => {
   try {
     const userId = req.params.userId;
     let tasks;
-    
-    // Check if a status query parameter is provided
     const status = req.query.status;
 
     if (status == 'assigned' || status == 'done' || status == 'missing') {
@@ -144,4 +137,83 @@ app.get('/userTasks/:userId', async (req, res) => {
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
+});
+
+//getting Task Details
+app.get('/taskDetails/:id', async (req, res) => {
+  const taskId = req.params.id;
+
+  try {
+    const task = await TaskModel.findById(taskId); // Assuming you're using MongoDB and Mongoose
+
+    if (!task) {
+      return res.status(404).json({ error: 'Task not found' });
+    }
+
+    res.json({
+      taskname: task.taskname,
+      date: task.date,
+      time: task.time,
+      notistatus: task.notistatus,
+    });
+  } catch (error) {
+    console.error('Error fetching task details:', error);
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
+//sfoh dnyc djdv oklo
+
+
+const nodemailer = require('nodemailer');
+const cron = require('node-cron');
+const moment = require('moment');
+
+// Create nodemailer transporter
+const transporter = nodemailer.createTransport({
+  service: 'gmail',
+  auth: {
+    user: 'speakease2024@gmail.com',
+    pass: 'sfoh dnyc djdv oklo'
+  }
+});
+
+// Function to send email reminder for tasks
+async function sendTaskReminders() {
+  try {
+    const users = await UserModel.find();
+
+    for (const user of users) {
+      const tasks = await TaskModel.find({ user: user._id });
+      for (const task of tasks) {
+        const taskDateTime = moment(`${task.date} ${task.time}`, 'YYYY-MM-DD HH:mm');
+        const currentDateTime = moment();
+        if (taskDateTime.isSame(currentDateTime)) {
+          // Send email reminder
+          const mailOptions = {
+            from: 'speakease2024@gmail.com',
+            to: user.email,
+            subject: 'Task Reminder',
+            text: `Dear ${user.name},\n\nThis is a reminder for your task: ${task.taskname}\n\nRegards,\nSpeak Ease`
+          };
+
+          transporter.sendMail(mailOptions, function(error, info) {
+            if (error) {
+              console.log(`Error sending email for task ${task._id} to ${user.email}:`, error);
+            } else {
+              console.log(`Email sent for task ${task._id} to ${user.email}:`, info.response);
+            }
+          });
+        }
+      }
+    }
+  } catch (error) {
+    console.log('Error sending task reminders:', error);
+  }
+}
+
+// Schedule the task reminder job to run every minute
+cron.schedule('* * * * *', () => {
+  console.log('Running task reminder job...');
+  sendTaskReminders();
 });
